@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { toast } from "sonner";
+import CowGameOverOverlay from "./CowGameOverOverlay";
 
 interface Cell {
   isMine: boolean;
@@ -26,6 +27,7 @@ const Minesweeper = () => {
   const [timer, setTimer] = useState(0);
   const [flagCount, setFlagCount] = useState(0);
   const [isFirstClick, setIsFirstClick] = useState(true);
+  const [showCowOverlay, setShowCowOverlay] = useState(false);
 
   const { rows, cols, mines } = DIFFICULTIES[difficulty];
 
@@ -157,6 +159,7 @@ const Minesweeper = () => {
         })),
       );
       setGameStatus("lost");
+      setShowCowOverlay(true);
       toast.error("💥 Бум! Игра окончена!");
     } else {
       newBoard = revealCell(row, col, newBoard);
@@ -241,6 +244,15 @@ const Minesweeper = () => {
 
   return (
     <div className="text-center space-y-6">
+      <CowGameOverOverlay
+        isVisible={showCowOverlay}
+        onRestart={() => {
+          setShowCowOverlay(false);
+          initializeGame();
+        }}
+        onClose={() => setShowCowOverlay(false)}
+      />
+
       <div className="flex flex-wrap justify-center gap-4 items-center">
         <div className="flex gap-2">
           {(Object.keys(DIFFICULTIES) as Difficulty[]).map((diff) => (
