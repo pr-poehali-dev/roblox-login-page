@@ -9,11 +9,15 @@ import Icon from "@/components/ui/icon";
 interface LoginFormData {
   username: string;
   password: string;
+  email?: string;
+  confirmPassword?: string;
 }
 
 interface FormErrors {
   username?: string;
   password?: string;
+  email?: string;
+  confirmPassword?: string;
   general?: string;
 }
 
@@ -22,10 +26,13 @@ const LoginForm = () => {
   const [formData, setFormData] = useState<LoginFormData>({
     username: "",
     password: "",
+    email: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -36,10 +43,24 @@ const LoginForm = () => {
       newErrors.username = "Минимум 3 символа";
     }
 
+    if (isRegisterMode && (!formData.email || !formData.email.trim())) {
+      newErrors.email = "Email обязателен";
+    } else if (
+      isRegisterMode &&
+      formData.email &&
+      !/\S+@\S+\.\S+/.test(formData.email)
+    ) {
+      newErrors.email = "Некорректный email";
+    }
+
     if (!formData.password) {
       newErrors.password = "Пароль обязателен";
     } else if (formData.password.length < 6) {
       newErrors.password = "Минимум 6 символов";
+    }
+
+    if (isRegisterMode && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Пароли не совпадают";
     }
 
     setErrors(newErrors);
@@ -52,6 +73,11 @@ const LoginForm = () => {
   ): Promise<boolean> => {
     // Имитация API запроса
     await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    if (isRegisterMode) {
+      // Простая имитация регистрации
+      return true;
+    }
 
     // Простая проверка для демонстрации
     return username === "admin" && password === "123456";
@@ -69,7 +95,11 @@ const LoginForm = () => {
       const success = await simulateLogin(formData.username, formData.password);
 
       if (success) {
-        toast.success("🎮 Добро пожаловать в игру!");
+        toast.success(
+          isRegisterMode
+            ? "🎮 Регистрация успешна!"
+            : "🎮 Добро пожаловать в игру!",
+        );
         // Сохраняем данные пользователя
         localStorage.setItem(
           "gameUser",
@@ -81,8 +111,14 @@ const LoginForm = () => {
         // Перенаправляем в игровую зону
         navigate("/game");
       } else {
-        setErrors({ general: "Неверное имя игрока или пароль" });
-        toast.error("Ошибка входа в игру");
+        setErrors({
+          general: isRegisterMode
+            ? "Ошибка регистрации"
+            : "Неверное имя игрока или пароль",
+        });
+        toast.error(
+          isRegisterMode ? "Ошибка регистрации" : "Ошибка входа в игру",
+        );
       }
     } catch (error) {
       setErrors({ general: "Ошибка подключения к серверу" });
@@ -104,6 +140,13 @@ const LoginForm = () => {
     }
   };
 
+  const toggleMode = () => {
+    setIsRegisterMode(!isRegisterMode);
+    setFormData({ username: "", password: "", email: "", confirmPassword: "" });
+    setErrors({});
+    setShowForgotPassword(false);
+  };
+
   return (
     <div className="relative backdrop-blur-lg bg-gradient-to-br from-purple-900/20 to-pink-900/20 p-8 rounded-2xl border border-purple-500/30 shadow-2xl">
       <div className="absolute -top-2 -left-2 w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-xl opacity-60"></div>
@@ -117,7 +160,9 @@ const LoginForm = () => {
               GamePortal
             </h1>
           </div>
-          <p className="text-gray-300 text-lg">Войди в игру</p>
+          <p className="text-gray-300 text-lg">
+            {isRegisterMode ? "Создай аккаунт" : "Войди в игру"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -156,6 +201,35 @@ const LoginForm = () => {
             )}
           </div>
 
+          {isRegisterMode && (
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-purple-300 font-medium">
+                Email
+              </Label>
+              <div className="relative group">
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email || ""}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  className={`bg-black/40 border-purple-500/50 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400/50 transition-all duration-300 group-hover:border-purple-400/70 ${
+                    errors.email ? "border-red-500/70 focus:border-red-500" : ""
+                  }`}
+                  placeholder="Введи свой email"
+                  disabled={isLoading}
+                />
+                <Icon
+                  name="Mail"
+                  size={20}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 opacity-60"
+                />
+              </div>
+              {errors.email && (
+                <p className="text-red-400 text-sm">{errors.email}</p>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="password" className="text-purple-300 font-medium">
               Пароль
@@ -185,6 +259,42 @@ const LoginForm = () => {
             )}
           </div>
 
+          {isRegisterMode && (
+            <div className="space-y-2">
+              <Label
+                htmlFor="confirmPassword"
+                className="text-purple-300 font-medium"
+              >
+                Подтверди пароль
+              </Label>
+              <div className="relative group">
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword || ""}
+                  onChange={(e) =>
+                    handleInputChange("confirmPassword", e.target.value)
+                  }
+                  className={`bg-black/40 border-purple-500/50 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400/50 transition-all duration-300 group-hover:border-purple-400/70 ${
+                    errors.confirmPassword
+                      ? "border-red-500/70 focus:border-red-500"
+                      : ""
+                  }`}
+                  placeholder="Повтори пароль"
+                  disabled={isLoading}
+                />
+                <Icon
+                  name="Lock"
+                  size={20}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-400 opacity-60"
+                />
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-red-400 text-sm">{errors.confirmPassword}</p>
+              )}
+            </div>
+          )}
+
           <Button
             type="submit"
             disabled={isLoading}
@@ -197,20 +307,37 @@ const LoginForm = () => {
               </>
             ) : (
               <>
-                <Icon name="Play" size={20} className="mr-2" />
-                Войти в игру
+                <Icon
+                  name={isRegisterMode ? "UserPlus" : "Play"}
+                  size={20}
+                  className="mr-2"
+                />
+                {isRegisterMode ? "Зарегистрироваться" : "Войти в игру"}
               </>
             )}
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-3">
           <button
-            onClick={handleForgotPassword}
-            className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-sm underline"
+            onClick={toggleMode}
+            className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-sm font-medium"
           >
-            Забыл пароль?
+            {isRegisterMode
+              ? "Уже есть аккаунт? Войти"
+              : "Нет аккаунта? Зарегистрироваться"}
           </button>
+
+          {!isRegisterMode && (
+            <div>
+              <button
+                onClick={handleForgotPassword}
+                className="text-purple-400 hover:text-purple-300 transition-colors duration-300 text-sm underline"
+              >
+                Забыл пароль?
+              </button>
+            </div>
+          )}
         </div>
 
         {showForgotPassword && (

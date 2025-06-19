@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
+import Minesweeper from "@/components/Minesweeper";
 
 interface GameUser {
   username: string;
@@ -50,52 +51,22 @@ const Game = () => {
           </div>
         </header>
 
-        <div className="text-center py-12">
-          <Icon
-            name="Trophy"
-            size={64}
-            className="text-yellow-400 mx-auto mb-4"
-          />
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            🎮 Добро пожаловать в игру!
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Игрок{" "}
-            <span className="text-purple-400 font-bold">{user.username}</span>{" "}
-            успешно вошел в систему
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-purple-800/40 to-pink-800/40 p-6 rounded-xl border border-purple-500/30">
-              <Icon
-                name="Zap"
-                size={32}
-                className="text-yellow-400 mx-auto mb-3"
-              />
-              <h3 className="text-lg font-bold mb-2">Быстрая игра</h3>
-              <p className="text-gray-300 text-sm">Начни играть прямо сейчас</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-800/40 to-purple-800/40 p-6 rounded-xl border border-blue-500/30">
-              <Icon
-                name="Users"
-                size={32}
-                className="text-blue-400 mx-auto mb-3"
-              />
-              <h3 className="text-lg font-bold mb-2">Мультиплеер</h3>
-              <p className="text-gray-300 text-sm">Играй с друзьями онлайн</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-800/40 to-blue-800/40 p-6 rounded-xl border border-green-500/30">
-              <Icon
-                name="Settings"
-                size={32}
-                className="text-green-400 mx-auto mb-3"
-              />
-              <h3 className="text-lg font-bold mb-2">Настройки</h3>
-              <p className="text-gray-300 text-sm">Персонализируй игру</p>
-            </div>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <Icon
+              name="Bomb"
+              size={64}
+              className="text-purple-400 mx-auto mb-4"
+            />
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              💣 Сапёр
+            </h2>
+            <p className="text-xl text-gray-300 mb-8">
+              Найди все мины, не взорвавшись!
+            </p>
           </div>
+
+          <Minesweeper />
         </div>
       </div>
     </div>
